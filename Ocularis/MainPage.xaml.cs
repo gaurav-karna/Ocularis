@@ -48,6 +48,8 @@ namespace Ocularis
             AppConfiguration.FaceApiEndPoint = "https://westcentralus.api.cognitive.microsoft.com";
             AppConfiguration.VisionApiSubscriptionKey = "c629cf862be745d49e5f1e1ba5273d4b";
             AppConfiguration.VisionApiEndPoint = "https://westcentralus.api.cognitive.microsoft.com";
+            AppConfiguration.ProjectAnswerSearchSubscriptionKey= "6c8eb7b5c0964e61930c5fa4ed693900";
+            AppConfiguration.ProjectAnswerSearchEndpoint = "https://api.labs.cognitive.microsoft.com/answersearch/v7.0/search";
         }
 
         private async void  Button_Click(object sender, RoutedEventArgs e)

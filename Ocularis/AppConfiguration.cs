@@ -10,8 +10,6 @@ namespace Ocularis
     public static class AppConfiguration
     {
         private readonly static ApplicationDataContainer _localSettings = ApplicationData.Current.LocalSettings;
-
-
         public static string LuisApiApplicationId
         {
             get
@@ -93,6 +91,29 @@ namespace Ocularis
             set
             {
                 _localSettings.Values["vision.endPoint"] = value;
+            }
+        }
+
+        public static string ProjectAnswerSearchSubscriptionKey
+        {
+            get
+            {
+                return _localSettings.Values["projectanswersearch.subscriptionKey"].ToString();
+            }
+            set
+            {
+                _localSettings.Values["projectanswersearch.subscriptionKey"] = value;
+            }
+        }
+        public static string ProjectAnswerSearchEndpoint
+        {
+            get
+            {
+                return _localSettings.Values["projectanswersearch.endPoint"].ToString();
+            }
+            set
+            {
+                _localSettings.Values["projectanswersearch.endPoint"] = value;
             }
         }
     }
