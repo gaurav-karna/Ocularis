@@ -496,7 +496,7 @@ def whatsthat():
         camera.close()
 
     # import cv2
-    # img = cv2.imread('makeharvatd.png')
+    # img = cv2.imread('makeharvard.png')
     # cv2.imwrite(timer+'.jpeg',img)
 
     source = tinify.from_file(os.path.join(os.getcwd(), timer + '.jpeg'))
