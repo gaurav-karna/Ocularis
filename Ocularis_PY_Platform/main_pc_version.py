@@ -41,6 +41,11 @@ if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
 else:
     os.mkdir(os.path.join(os.getcwd(), 'folder_images'))
 
+if os.path.exists(os.path.join(os.getcwd(), 'tempimages')):
+    pass
+else:
+    os.mkdir(os.path.join(os.getcwd(), 'tempimages'))
+    
 bingMapsKey = 'Ar_sR9YDasSzQx0unCEyCqmb9cqIivEp4qHFYCCfuAYJfiZriQcMuYFt_IRzvR3b '
 tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
 cameraResolution = (1024, 768)
