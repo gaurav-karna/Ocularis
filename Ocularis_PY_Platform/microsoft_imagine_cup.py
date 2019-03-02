@@ -4,13 +4,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 import tinify
 import datetime
+import re
 from azure.cognitiveservices.vision.computervision import ComputerVisionAPI
 from msrest.authentication import CognitiveServicesCredentials
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 from builtins import input
-# import RPi.GPIO as GPIO
-# import picamera
+import RPi.GPIO as GPIO
+import picamera
 from utils import create_uber_client
 from utils import fail_print
 from utils import import_oauth2_credentials
@@ -34,6 +35,9 @@ import requests
 import json
 from PIL import Image
 import cv2
+from azure.cognitiveservices.vision.computervision.models import TextRecognitionMode
+from azure.cognitiveservices.vision.computervision.models import TextOperationStatusCodes
+
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
     pass
@@ -42,7 +46,7 @@ else:
 
 bingMapsKey = 'Ar_sR9YDasSzQx0unCEyCqmb9cqIivEp4qHFYCCfuAYJfiZriQcMuYFt_IRzvR3b '
 tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
-
+cameraResolution = (1024, 768)
 
 def speak_label(text):
     try:
@@ -224,6 +228,11 @@ def currentad_seletest():
     return (latitude, longitude)
 
 
+def save_speech(mytext):
+    playsound.playsound(os.path.join(os.getcwd(), 'tempaud', mytext + '.mp3'))
+
+
+
 def currentad():
 
     send_url = "http://api.ipstack.com/check?access_key=c687e4498fc801d7a66e9b42fb2f6e50"
@@ -236,7 +245,7 @@ def currentad():
 def directions():
     try:
         # lat,lon = find_loc_address('1427 Alderbrook Ln San Jose CA 95129')
-        modular_speech('May I please know where do you wish to go ?')
+        save_speech('May I please know where do you wish to go')
         speech = speech2text()
         mlat,mlon = currentad()
         try:
@@ -245,7 +254,7 @@ def directions():
             loc = speech
         naviagtor(mlon,mlat,loc)
     except Exception:
-        speak_text('An Error Occurred please try again')
+        save_speech('An Error Occurred please try again')
 
 
 
@@ -273,7 +282,7 @@ def uber():
 
     SURGE_PRODUCT_ID = 'd4abaae7-f4d6-4152-91cc-77523e8165a4'
 
-    modular_speech('May I please know where do you wish to go ?')
+    save_speech('May I please know where do you wish to go')
     speech = speech2text()
     START_LAT, START_LNG = currentad()
     try:
@@ -470,9 +479,9 @@ def uber():
 
 
 def whatsthat():
-    import os
 
-    cameraResolution = (1024, 768)
+
+
     now = datetime.datetime.now()
     timer = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
 
@@ -491,7 +500,7 @@ def whatsthat():
     url = source.url
 
     # Get region and key from environment variables
-    import os
+
     region = 'westcentralus'
     key = '43977e2279b849c1bb5c463387b37307'
 
@@ -512,7 +521,6 @@ def whatsthat():
 
 def remember():
 
-    cameraResolution = (1024, 768)
 
     with picamera.PiCamera() as camera:
 
@@ -537,13 +545,13 @@ def remember():
                 top, right, bottom, left = face_location
                 face_image = image[top:bottom, left:right]
                 pil_image = Image.fromarray(face_image)
-                modular_speech('could you please say the name of the person ?')
+                save_speech('could you please say the name of the person')
                 name_person = speech2text()
                 pil_image.save(os.path.join(os.getcwd(), 'folder_images', name_person + '.jpeg'))
 
         else:
 
-            modular_speech('Sorry no faces found')
+            save_speech('Sorry no faces found')
 
 
 def whoisthat():
@@ -601,7 +609,7 @@ def facts():
     from msrest.authentication import CognitiveServicesCredentials
 
     client = EntitySearchAPI(CognitiveServicesCredentials(subscription_key))
-    modular_speech('I am ready to answer ')
+    save_speech('I am ready to answer')
     speech = speech2text()
     try:
 
@@ -615,7 +623,78 @@ def facts():
                 modular_speech(main_entities[0].description)
 
     except AttributeError:
-        speak_text('please try again')
+        save_speech('please try again')
+
+
+
+def readit():
+    region = 'westcentralus'
+    key = '43977e2279b849c1bb5c463387b37307'
+
+    # Set credentials
+    credentials = CognitiveServicesCredentials(key)
+
+    # Create client
+    client = ComputerVisionAPI(region, credentials=credentials)
+
+    with picamera.PiCamera() as camera:
+
+        # set camera resolution
+        camera.resolution = cameraResolution
+        # print("Starting camera preview...")
+
+        name_docu = 'tempread.jpeg'
+        camera.capture(name_docu, format='jpeg')
+        camera.close()
+
+    source = tinify.from_file(os.path.join(os.getcwd(), name_docu + '.jpeg'))
+    url = source.url
+    mode = TextRecognitionMode.handwritten
+    raw = True
+    custom_headers = None
+    numberOfCharsInOperationId = 36
+
+
+    save_speech('please wait until I process the text')
+
+    # Async SDK call
+    rawHttpResponse = client.recognize_text(url, mode, custom_headers, raw)
+
+    # Get ID from returned headers
+    operationLocation = rawHttpResponse.headers["Operation-Location"]
+    idLocation = len(operationLocation) - numberOfCharsInOperationId
+    operationId = operationLocation[idLocation:]
+
+    result = client.get_text_operation_result(operationId)
+
+    # SDK call
+    while result.status in ['NotStarted', 'Running']:
+        time.sleep(1)
+        result = client.get_text_operation_result(operationId)
+
+    # Get data
+    main_string = ''
+
+    if result.status == TextOperationStatusCodes.succeeded:
+
+        for line in result.recognition_result.lines:
+            main_string = main_string + ' ' + line.text
+
+
+        main_string = re.sub("!|/|;|:|-", "", main_string)
+        main_string = main_string.replace('|','')
+        main_string = main_string.replace('*', '')
+
+        modular_speech(main_string)
+
+
+        # sent_token = main_string.split('.')
+        #
+        # for sente in sent_token:
+        #     modular_speech(sente)
+
+    else:
+        save_speech('unknown error occured please try again')
 
 
 
@@ -627,7 +706,7 @@ def main():
         while True:
 
             if count_main == 0 :
-                speak_label('Welcome to Ocularis the blind assistant')
+                save_speech('Welcome to Ocularis, the blind assistant')
                 sleep(3)
                 count_main = 1
             # button_next = GPIO.input(cn1)
@@ -635,57 +714,74 @@ def main():
             # button_back = GPIO.input(cn3)
 
 
-            speak_label('weather')
+            save_speech('weather')
             if opener == True:
                 weather()
                 opener = False
             else:
                 continue
 
-            speak_label('directions')
+            save_speech('directions')
             if opener == True:
                 directions()
                 opener = False
             else:
                 continue
 
-            speak_label('uber')
+            save_speech('uber')
             if opener == True:
                 uber()
                 opener = False
             else:
                 continue
 
-            speak_label('whatsthat')
+            save_speech('whatsthat')
             if opener == True:
                 whatsthat()
                 opener = False
             else:
                 continue
 
-            speak_label('remember')
+            save_speech('remember')
             if opener == True:
                 remember()
                 opener = False
             else:
                 continue
 
-            speak_label('who is that')
+            save_speech('whosthat')
             if opener == True:
                 whoisthat()
                 opener = False
             else:
                 continue
 
+            save_speech('facts')
+            if opener == True:
+                facts()
+                opener = False
+            else:
+                continue
+
+            save_speech('read it')
+            if opener == True:
+                readit()
+                opener = False
+            else:
+                continue
+
+
+
+
+
     except KeyboardInterrupt:
         GPIO.cleanup()
 
 
-# if __name__ == "__main__":
-#     try:
-#         # device = get_device()
-#         main()
-#     except KeyboardInterrupt:
-#         pass
-# show_image('weather')
-facts()
+if __name__ == "__main__":
+    try:
+        # device = get_device()
+        main()
+    except KeyboardInterrupt:
+        pass
+
