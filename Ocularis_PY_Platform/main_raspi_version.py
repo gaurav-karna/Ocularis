@@ -626,8 +626,13 @@ def facts():
                              if entity.entity_presentation_info.entity_scenario == "DominantEntity"]
 
             if main_entities:
-                modular_speech(main_entities[0].description)
+                main_string = main_entities[0].description
+                sent_token = main_string.split('.')
 
+                for sente in sent_token:
+                    modular_speech(sente)
+                    if keyboard.is_pressed('d'):
+                        break
     except AttributeError:
         save_speech('unknownError')
 
@@ -691,14 +696,16 @@ def readit():
         main_string = main_string.replace('|','')
         main_string = main_string.replace('*', '')
 
-        modular_speech(main_string)
+#         modular_speech(main_string)
 
 
-        # sent_token = main_string.split('.')
-        #
-        # for sente in sent_token:
-        #     modular_speech(sente)
-
+        sent_token = main_string.split('.')
+        
+        for sente in sent_token:
+            modular_speech(sente)
+            if keyboard.is_pressed('d'):
+                break    
+                
     else:
         save_speech('unknownError')
 
