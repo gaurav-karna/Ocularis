@@ -48,14 +48,9 @@ bingMapsKey = 'Ar_sR9YDasSzQx0unCEyCqmb9cqIivEp4qHFYCCfuAYJfiZriQcMuYFt_IRzvR3b 
 tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
 cameraResolution = (1024, 768)
 
-def speak_label(text):
-    try:
-        something = pyttsx3.init()
-        something.say(text)
-        something.runAndWait()
-    except Exception as e :
-        print(e)
+def speak_label(mytext):
 
+    playsound.playsound(os.path.join(os.getcwd(), 'tempaud', mytext + '.mp3'))
     # speak
     while True:
 
@@ -714,56 +709,56 @@ def main():
             # button_back = GPIO.input(cn3)
 
 
-            save_speech('weather')
+            speak_label('weather')
             if opener == True:
                 weather()
                 opener = False
             else:
                 continue
 
-            save_speech('directions')
+            speak_label('directions')
             if opener == True:
                 directions()
                 opener = False
             else:
                 continue
 
-            save_speech('uber')
+            speak_label('uber')
             if opener == True:
                 uber()
                 opener = False
             else:
                 continue
 
-            save_speech('whatsthat')
+            speak_label('whatsthat')
             if opener == True:
                 whatsthat()
                 opener = False
             else:
                 continue
 
-            save_speech('remember')
+            speak_label('remember')
             if opener == True:
                 remember()
                 opener = False
             else:
                 continue
 
-            save_speech('whosthat')
+            speak_label('whosthat')
             if opener == True:
                 whoisthat()
                 opener = False
             else:
                 continue
 
-            save_speech('facts')
+            speak_label('facts')
             if opener == True:
                 facts()
                 opener = False
             else:
                 continue
 
-            save_speech('read it')
+            speak_label('read it')
             if opener == True:
                 readit()
                 opener = False
