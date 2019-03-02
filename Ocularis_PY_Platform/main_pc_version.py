@@ -672,56 +672,56 @@ def main():
                 weather()
                 opener = False
             else:
-                continue
+                pass
 
             speak_label('directions')
             if opener == True:
                 directions()
                 opener = False
             else:
-                continue
+                pass
 
             speak_label('uber')
             if opener == True:
                 uber()
                 opener = False
             else:
-                continue
+                pass
 
             speak_label('whatsthat')
             if opener == True:
                 whatsthat()
                 opener = False
             else:
-                continue
+                pass
 
             speak_label('remember')
             if opener == True:
                 remember()
                 opener = False
             else:
-                continue
+                pass
 
             speak_label('whosthat')
             if opener == True:
                 whoisthat()
                 opener = False
             else:
-                continue
+                pass
 
             speak_label('facts')
             if opener == True:
                 facts()
                 opener = False
             else:
-                continue
+                pass
 
             speak_label('read it')
             if opener == True:
                 readit()
                 opener = False
             else:
-                continue
+                pass
 
     except KeyboardInterrupt:
         pass
