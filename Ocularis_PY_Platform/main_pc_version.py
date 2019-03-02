@@ -21,6 +21,7 @@ from uber_rides.errors import ClientError
 from uber_rides.errors import ServerError
 import face_recognition
 import os
+import shutil
 from time import sleep
 import urllib.request
 import pyap
@@ -48,7 +49,8 @@ else:
     os.mkdir(os.path.join(os.getcwd(), 'tempimages'))
 
 if os.path.exists(os.path.join(os.getcwd(), 'majortempaud')):
-    os.rmdir(os.path.join(os.getcwd(), 'majortempaud'))
+    # os.rmdir(os.path.join(os.getcwd(), 'majortempaud'))
+    shutil.rmtree(os.path.join(os.getcwd(), 'majortempaud'))
     os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
 else:
     os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
@@ -242,7 +244,7 @@ def currentad():
 def directions():
     try:
         # lat,lon = find_loc_address('1427 Alderbrook Ln San Jose CA 95129')
-        save_speech('May I please know where do you wish to go')
+        save_speech('whereDoYouWantToGo')
         speech = speech2text()
         mlat, mlon = currentad()
         try:
@@ -251,7 +253,7 @@ def directions():
             loc = speech
         naviagtor(mlon, mlat, loc)
     except Exception:
-        save_speech('An Error Occurred please try again')
+        save_speech('error')
 
 
 def weather():
@@ -276,7 +278,7 @@ def uber():
 
     SURGE_PRODUCT_ID = 'd4abaae7-f4d6-4152-91cc-77523e8165a4'
 
-    save_speech('May I please know where do you wish to go')
+    save_speech('whereDoYouWantToGo')
     speech = speech2text()
     START_LAT, START_LNG = currentad()
     try:
@@ -481,7 +483,7 @@ def whatsthat():
     cap.release()
 
     # import cv2
-    # img = cv2.imread('makeharvatd.png')
+    # img = cv2.imread('makeharvard.png')
     # cv2.imwrite(timer+'.jpeg',img)
 
     source = tinify.from_file(os.path.join(os.getcwd(), 'tempimages', timer + '.jpeg'))
@@ -529,13 +531,13 @@ def remember():
             top, right, bottom, left = face_location
             face_image = image[top:bottom, left:right]
             pil_image = Image.fromarray(face_image)
-            save_speech('could you please say the name of the person')
+            save_speech('nameOfPerson')
             name_person = speech2text()
             pil_image.save(os.path.join(os.getcwd(), 'folder_images', name_person + '.jpeg'))
 
     else:
 
-        save_speech('Sorry no faces found')
+        save_speech('noFaces')
 
 
 def whoisthat():
@@ -579,7 +581,7 @@ def whoisthat():
             modular_speech(faces)
 
         if len(face_names) == 0 :
-            modular_speech('Sorry no faces found')
+            modular_speech('noFaces')
 
     except Exception:
         pass
@@ -592,7 +594,7 @@ def facts():
     from msrest.authentication import CognitiveServicesCredentials
 
     client = EntitySearchAPI(CognitiveServicesCredentials(subscription_key))
-    save_speech('I am ready to answer')
+    save_speech('answer')
     speech = speech2text()
     try:
 
@@ -606,7 +608,7 @@ def facts():
                 modular_speech(main_entities[0].description)
 
     except AttributeError:
-        save_speech('unknown error occured please try again')
+        save_speech('unknownError')
 
 
 def readit():
@@ -632,7 +634,7 @@ def readit():
     custom_headers = None
     numberOfCharsInOperationId = 36
 
-    save_speech('please wait until I process the text')
+    save_speech('waitForText')
 
     # Async SDK call
     rawHttpResponse = client.recognize_text(url, mode, custom_headers, raw)
@@ -669,7 +671,7 @@ def readit():
         #     modular_speech(sente)
 
     else:
-        save_speech('unknown error occured please try again')
+        save_speech('unknownError')
 
 
 def main():
@@ -680,7 +682,8 @@ def main():
         while True:
 
             if count_main == 0:
-                save_speech('Welcome to Ocularis, the blind assistant')
+                # save_speech('Welcome to Ocularis, the blind assistant')
+                save_speech('welcome')
                 sleep(3)
                 count_main = 1
             # button_next = a
@@ -736,7 +739,7 @@ def main():
             else:
                 pass
 
-            speak_label('read it')
+            speak_label('readIt')
             if opener == True:
                 readit()
                 opener = False
