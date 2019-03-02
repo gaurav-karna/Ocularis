@@ -43,6 +43,13 @@ if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
     pass
 else:
     os.mkdir(os.path.join(os.getcwd(), 'folder_images'))
+    
+if os.path.exists(os.path.join(os.getcwd(), 'majortempaud')):
+    os.rmdir(os.path.join(os.getcwd(), 'majortempaud'))
+    os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
+else:
+    os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))  
+    
 
 bingMapsKey = 'Ar_sR9YDasSzQx0unCEyCqmb9cqIivEp4qHFYCCfuAYJfiZriQcMuYFt_IRzvR3b '
 tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
@@ -88,11 +95,12 @@ def speak_text(text):
 
 def modular_speech(mytext):
     language = 'en'
-
+    now = datetime.datetime.now()
+    uid = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
     myobj = gTTS(text=mytext, lang=language, slow=False)
-    myobj.save("temp.mp3")
+    myobj.save(os.path.join(os.getcwd(),'majortempaud' ,uid+'.mp3'))
     # Playing the converted file
-    playsound.playsound(os.path.join(os.getcwd(),'temp.mp3'))
+    playsound.playsound(os.path.join(os.getcwd(),'majortempaud' ,uid+'.mp3'))
 
 def naviagtor(mlon,mlat,loc):
     prevlen = 0
