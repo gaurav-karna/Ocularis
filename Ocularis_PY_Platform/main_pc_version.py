@@ -35,6 +35,7 @@ import cv2
 from azure.cognitiveservices.vision.computervision.models import TextRecognitionMode
 from azure.cognitiveservices.vision.computervision.models import TextOperationStatusCodes
 import keyboard
+import time
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
     pass
@@ -45,7 +46,16 @@ if os.path.exists(os.path.join(os.getcwd(), 'tempimages')):
     pass
 else:
     os.mkdir(os.path.join(os.getcwd(), 'tempimages'))
-    
+
+if os.path.exists(os.path.join(os.getcwd(), 'majortempaud')):
+    os.rmdir(os.path.join(os.getcwd(), 'majortempaud'))
+    os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
+else:
+    os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
+
+if os.path.exists(os.path.join(os.getcwd(), 'temp.mp3')):
+    os.remove('temp.mp3')
+
 bingMapsKey = 'Ar_sR9YDasSzQx0unCEyCqmb9cqIivEp4qHFYCCfuAYJfiZriQcMuYFt_IRzvR3b '
 tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
 cameraResolution = (1024, 768)
@@ -67,11 +77,12 @@ def speak_label(mytext):
 
 def modular_speech(mytext):
     language = 'en'
-
+    now = datetime.datetime.now()
+    uid = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
     myobj = gTTS(text=mytext, lang=language, slow=False)
-    myobj.save("temp.mp3")
+    myobj.save(os.path.join(os.getcwd(),'majortempaud' ,uid+'.mp3'))
     # Playing the converted file
-    playsound.playsound(os.path.join(os.getcwd(), 'temp.mp3'))
+    playsound.playsound(os.path.join(os.getcwd(),'majortempaud' ,uid+'.mp3'))
 
 
 def naviagtor(mlon, mlat, loc):
@@ -493,6 +504,7 @@ def whatsthat():
     analysis = client.describe_image(url, max_descriptions, language)
 
     captionn = analysis.captions[0].text
+    print(captionn)
     modular_speech(captionn)
 
 
@@ -507,7 +519,7 @@ def remember():
     image_port = face_recognition.load_image_file(name_docu)
     face_locations = face_recognition.face_locations(image_port)
     # from PIL import Image
-    image = Image.open(name_docu)
+    # image = Image.open(name_docu)
 
     if len(face_locations) > 0:
         # face_location = face_locations = face_recognition.face_locations(image_port)
@@ -566,6 +578,9 @@ def whoisthat():
         for faces in face_names:
             modular_speech(faces)
 
+        if len(face_names) == 0 :
+            modular_speech('Sorry no faces found')
+
     except Exception:
         pass
 
@@ -591,7 +606,7 @@ def facts():
                 modular_speech(main_entities[0].description)
 
     except AttributeError:
-        save_speech('please try again')
+        save_speech('unknown error occured please try again')
 
 
 def readit():
