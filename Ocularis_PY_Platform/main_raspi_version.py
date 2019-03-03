@@ -631,7 +631,7 @@ def facts():
 
                 for sente in sent_token:
                     modular_speech(sente)
-                    if keyboard.is_pressed('d'):
+                    if GPIO.input(cn1) == 0:
                         break
     except AttributeError:
         save_speech('unknownError')
@@ -703,8 +703,8 @@ def readit():
         
         for sente in sent_token:
             modular_speech(sente)
-            if keyboard.is_pressed('d'):
-                break    
+            if GPIO.input(cn1) == 0:
+                break
                 
     else:
         save_speech('unknownError')
