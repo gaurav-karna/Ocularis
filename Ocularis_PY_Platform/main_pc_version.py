@@ -680,7 +680,76 @@ def readit():
     else:
         save_speech('unknownError')
 
+def check(text_inlet):
+    text_key = 'f2bca51e7eef49ac8535f9595f4dda76'
+    text_analytics_base_url = "https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/"
+    key_phrase_api_url = text_analytics_base_url + "keyPhrases"
+    documents = {'documents': [
+        {'id': '1', 'language': 'en',
+         'text': text_inlet}
+    ]}
+    headers = {'Ocp-Apim-Subscription-Key': text_key}
+    response = requests.post(key_phrase_api_url, headers=headers, json=documents)
+    key_phrases = response.json()
+    stringy  = ''
+    for i in key_phrases['documents'][0]['keyPhrases']:
+        stringy = stringy + ' ' + i
+    return stringy
 
+def news(search_term = None):
+    subscription_key = "YOUR-SUBSCRIPTION-KEY"
+
+    if search_term == None:
+        save_speech('news')
+        speech = speech2text()
+        search_term = check(speech)
+
+
+    client = NewsSearchAPI(CognitiveServicesCredentials(subscription_key))
+    news_result = client.news.search(query=search_term, market="en-us", count=10,freshness='Week')
+    closer = False
+
+    if news_result.value:
+        for k in news_result.value:
+            modular_speech(k.name)
+
+            while True:
+                if keyboard.is_pressed('a'):
+                    break
+
+                if keyboard.is_pressed('s'):
+                    sent_token = k.description.split('.')
+
+                    for sente in sent_token:
+                        modular_speech(sente)
+                        if keyboard.is_pressed('d'):
+                            break
+
+                    break
+
+                if keyboard.is_pressed('d'):
+                    closer = True
+                    break
+
+            if closer == True:
+                break
+            else:
+                pass
+
+
+
+        # first_news_result = news_result.value[0]
+        # print("Total estimated matches value: {}".format(news_result.total_estimated_matches))
+        # print("News result count: {}".format(len(news_result.value)))
+        # print("First news name: {}".format(first_news_result.name))
+        # print("First news url: {}".format(first_news_result.url))
+        # print("First news description: {}".format(first_news_result.description))
+        # print("First published time: {}".format(first_news_result.date_published))
+        # print("First news provider: {}".format(first_news_result.provider[0].name))
+    else:
+        save_speech("nonews")
+
+        
 def main():
     global opener
     opener = False
@@ -749,6 +818,13 @@ def main():
             speak_label('readIt')
             if opener == True:
                 readit()
+                opener = False
+            else:
+                pass        
+            
+            speak_label('news')
+            if opener == True:
+                news()
                 opener = False
             else:
                 pass
