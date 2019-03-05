@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 import tinify
 import datetime
+from azure.cognitiveservices.search.newssearch import NewsSearchAPI
 import re
 from azure.cognitiveservices.vision.computervision import ComputerVisionAPI
 from msrest.authentication import CognitiveServicesCredentials
