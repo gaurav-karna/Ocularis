@@ -93,14 +93,62 @@ def speak_text(text):
         print(e)
 
 
-def modular_speech(mytext):
-    language = 'en'
-    now = datetime.datetime.now()
-    uid = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
-    myobj = gTTS(text=mytext, lang=language, slow=False)
-    myobj.save(os.path.join(os.getcwd(),'majortempaud' ,uid+'.mp3'))
-    # Playing the converted file
-    playsound.playsound(os.path.join(os.getcwd(),'majortempaud' ,uid+'.mp3'))
+
+class TextToSpeech(object):
+    def __init__(self, subscription_key,texty):
+        self.subscription_key = subscription_key
+        self.tts = texty
+        self.timestr = time.strftime("%Y%m%d-%H%M")
+        self.access_token = None
+
+
+def get_token(self):
+    fetch_token_url = "https://westus.api.cognitive.microsoft.com/sts/v1.0/issueToken"
+    headers = {
+        'Ocp-Apim-Subscription-Key': self.subscription_key
+    }
+    response = requests.post(fetch_token_url, headers=headers)
+    self.access_token = str(response.text)
+
+
+def save_audio(self,uid):
+    base_url = 'https://westus.tts.speech.microsoft.com/'
+    path = 'cognitiveservices/v1'
+    constructed_url = base_url + path
+    headers = {
+        'Authorization': 'Bearer ' + self.access_token,
+        'Content-Type': 'application/ssml+xml',
+        'X-Microsoft-OutputFormat': 'riff-24khz-16bit-mono-pcm',
+        'User-Agent': 'Ocularis_TTS'
+    }
+    xml_body = ElementTree.Element('speak', version='1.0')
+    xml_body.set('{http://www.w3.org/XML/1998/namespace}lang', 'en-us')
+    voice = ElementTree.SubElement(xml_body, 'voice')
+    voice.set('{http://www.w3.org/XML/1998/namespace}lang', 'en-US')
+    voice.set('name', 'Microsoft Server Speech Text to Speech Voice (en-US, Guy24KRUS)')
+    voice.text = self.tts
+    body = ElementTree.tostring(xml_body)
+
+    response = requests.post(constructed_url, headers=headers, data=body)
+    if response.status_code == 200:
+        with open(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'), 'wb') as audio:
+            audio.write(response.content)
+            print("\nStatus code: " + str(response.status_code) + "\nYour TTS is ready for playback.\n")
+    else:
+        print("\nStatus code: " + str(response.status_code) + "\nSomething went wrong. Check your subscription key and headers.\n")
+
+def modular_speech(text):
+    try:
+        subscription_key = "51140fb620194c33b1e60d3df44bfd1f"
+        now = datetime.datetime.now()
+        uid = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
+        app = TextToSpeech(subscription_key,text)
+        get_token(app)
+        save_audio(app,uid)
+        playsound.playsound(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'))
+    except Exception as e:
+        print(e)
+        save_speech('error')
 
 def naviagtor(mlon,mlat,loc):
     prevlen = 0
@@ -709,6 +757,70 @@ def readit():
     else:
         save_speech('unknownError')
 
+
+
+def check(text_inlet):
+    text_key = 'f2bca51e7eef49ac8535f9595f4dda76'
+    text_analytics_base_url = "https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/"
+    key_phrase_api_url = text_analytics_base_url + "keyPhrases"
+    documents = {'documents': [
+        {'id': '1', 'language': 'en',
+         'text': text_inlet}
+    ]}
+    headers = {'Ocp-Apim-Subscription-Key': text_key}
+    response = requests.post(key_phrase_api_url, headers=headers, json=documents)
+    key_phrases = response.json()
+    stringy = ''
+    for i in key_phrases['documents'][0]['keyPhrases']:
+        stringy = stringy + ' ' + i
+    return stringy
+
+
+def news(search_term=None):
+    subscription_key = "cd23f8ab176b45868b54452e0c423cc4"
+
+    if search_term == None:
+        save_speech('newsspeak')
+        speech = speech2text()
+        search_term = check(speech)
+
+    client = NewsSearchAPI(CognitiveServicesCredentials(subscription_key))
+    news_result = client.news.search(query=search_term, market="en-us", count=10, freshness='Week')
+    closer = False
+
+    if news_result.value:
+        for k in news_result.value:
+            modular_speech(k.name)
+
+            while True:
+                if GPIO.input(cn1) == 0:
+                    break
+
+                if GPIO.input(cn2) == 0:
+                    modular_speech(k.description)
+                    sleep(1)
+                    break
+
+                if GPIO.input(cn3) == 0:
+                    closer = True
+                    break
+
+            if closer == True:
+                break
+
+            else:
+                pass
+
+        # first_news_result = news_result.value[0]
+        # print("Total estimated matches value: {}".format(news_result.total_estimated_matches))
+        # print("News result count: {}".format(len(news_result.value)))
+        # print("First news name: {}".format(first_news_result.name))
+        # print("First news url: {}".format(first_news_result.url))
+        # print("First news description: {}".format(first_news_result.description))
+        # print("First published time: {}".format(first_news_result.date_published))
+        # print("First news provider: {}".format(first_news_result.provider[0].name))
+    else:
+        save_speech("nonews")        
 
 
 def main():
