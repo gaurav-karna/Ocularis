@@ -4,6 +4,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 import tinify
 import datetime
+import multiprocessing
+from xml.etree import ElementTree
 from azure.cognitiveservices.search.newssearch import NewsSearchAPI
 import re
 from azure.cognitiveservices.vision.computervision import ComputerVisionAPI
@@ -27,7 +29,6 @@ from time import sleep
 import urllib.request
 import pyap
 import time
-from gtts import gTTS
 import playsound
 import azure.cognitiveservices.speech as speechsdk
 import requests
@@ -38,6 +39,7 @@ from azure.cognitiveservices.vision.computervision.models import TextRecognition
 from azure.cognitiveservices.vision.computervision.models import TextOperationStatusCodes
 import keyboard
 import time
+import winsound
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
     pass
@@ -49,12 +51,12 @@ if os.path.exists(os.path.join(os.getcwd(), 'tempimages')):
 else:
     os.mkdir(os.path.join(os.getcwd(), 'tempimages'))
 
-if os.path.exists(os.path.join(os.getcwd(), 'majortempaud')):
-    # os.rmdir(os.path.join(os.getcwd(), 'majortempaud'))
-    shutil.rmtree(os.path.join(os.getcwd(), 'majortempaud'))
-    os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
-else:
-    os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
+# if os.path.exists(os.path.join(os.getcwd(), 'majortempaud')):
+#     # os.rmdir(os.path.join(os.getcwd(), 'majortempaud'))
+#     shutil.rmtree(os.path.join(os.getcwd(), 'majortempaud'))
+#     os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
+# else:
+#     os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
 
 if os.path.exists(os.path.join(os.getcwd(), 'temp.mp3')):
     os.remove('temp.mp3')
@@ -64,18 +66,15 @@ tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
 cameraResolution = (1024, 768)
 
 
-def speak_label(mytext):
-    playsound.playsound(os.path.join(os.getcwd(), 'tempaud', mytext + '.mp3'))
-    # speak
-    while True:
+def playerasync(uid):
 
-        if keyboard.is_pressed('a'):
-            break
-        if keyboard.is_pressed('s'):
-            global opener
-            opener = True
-            break
+    playsound.playsound(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'),False)
 
+def checker():
+
+    while 1:
+        if keyboard.is_pressed('d'):
+            break
 
 
 class TextToSpeech(object):
@@ -121,19 +120,41 @@ def save_audio(self,uid):
     else:
         print("\nStatus code: " + str(response.status_code) + "\nSomething went wrong. Check your subscription key and headers.\n")
 
+
+
+
 def modular_speech(text):
     try:
         subscription_key = "51140fb620194c33b1e60d3df44bfd1f"
         now = datetime.datetime.now()
         uid = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
-        app = TextToSpeech(subscription_key,text)
+        app = TextToSpeech(subscription_key, text)
         get_token(app)
-        save_audio(app,uid)
-        playsound.playsound(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'))
+        save_audio(app, uid)
+        p1 = multiprocessing.Process(target=checker)
+        p2 = multiprocessing.Process(target=playerasync(uid))
+        p1.start()
+        p2.start()
+        p1.join()
+        p2.terminate()
+        p2.join()
+        if p2.is_alive():
+            p2.terminate()
+
     except Exception as e:
         print(e)
-        save_speech('error')
 
+def speak_label(mytext):
+    playsound.playsound(os.path.join(os.getcwd(), 'tempaud', mytext + '.mp3'))
+    # speak
+    while True:
+
+        if keyboard.is_pressed('a'):
+            break
+        if keyboard.is_pressed('s'):
+            global opener
+            opener = True
+            break
 
 
 def naviagtor(mlon, mlat, loc):
@@ -522,42 +543,49 @@ def uber():
 
 
 def whatsthat():
-    now = datetime.datetime.now()
-    timer = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
+    try:
+        now = datetime.datetime.now()
+        timer = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
 
-    name_docu = os.path.join(os.getcwd(), 'tempimages', timer + '.jpeg')
-    cap = cv2.VideoCapture(0)
-    r, image = cap.read()
-    cv2.imwrite(name_docu, image)
-    cap.release()
+        name_docu = os.path.join(os.getcwd(), 'tempimages', timer + '.jpeg')
+        cap = cv2.VideoCapture(0)
+        r, image = cap.read()
+        cv2.imwrite(name_docu, image)
+        cap.release()
 
-    # import cv2
-    # img = cv2.imread('makeharvard.png')
-    # cv2.imwrite(timer+'.jpeg',img)
+        # import cv2
+        # img = cv2.imread('makeharvard.png')
+        # cv2.imwrite(timer+'.jpeg',img)
 
-    source = tinify.from_file(os.path.join(os.getcwd(), 'tempimages', timer + '.jpeg'))
-    url = source.url
+        source = tinify.from_file(os.path.join(os.getcwd(), 'tempimages', timer + '.jpeg'))
+        url = source.url
 
-    # Get region and key from environment variables
+        # Get region and key from environment variables
 
-    region = 'westcentralus'
-    key = '43977e2279b849c1bb5c463387b37307'
+        region = 'westcentralus'
+        key = '43977e2279b849c1bb5c463387b37307'
 
-    # Set credentials
-    credentials = CognitiveServicesCredentials(key)
+        # Set credentials
+        credentials = CognitiveServicesCredentials(key)
 
-    # Create client
-    client = ComputerVisionAPI(region, credentials=credentials)
-    # url = "http://www.public-domain-photos.com/free-stock-photos-4/travel/san-francisco/golden-gate-bridge-in-san-francisco.jpg"
-    language = "en"
-    max_descriptions = str(3)
+        # Create client
+        client = ComputerVisionAPI(region, credentials=credentials)
+        # url = "http://www.public-domain-photos.com/free-stock-photos-4/travel/san-francisco/golden-gate-bridge-in-san-francisco.jpg"
+        language = "en"
+        max_descriptions = str(3)
 
-    analysis = client.describe_image(url, max_descriptions, language)
+        analysis = client.describe_image(url, max_descriptions, language)
 
-    captionn = analysis.captions[0].text
-    print(captionn)
-    modular_speech(captionn)
+        if len(analysis.captions) > 0:
+            captionn = analysis.captions[0].text
+            print(captionn)
+            modular_speech(captionn)
 
+        else:
+            save_speech('unknownError')
+
+    except Exception as e:
+        print(e)
 
 def remember():
     # set camera resolution
@@ -629,7 +657,7 @@ def whoisthat():
         for faces in face_names:
             modular_speech(faces)
 
-        if len(face_names) == 0 :
+        if len(face_names) == 0:
             modular_speech('noFaces')
 
     except Exception:
@@ -655,12 +683,13 @@ def facts():
 
             if main_entities:
                 main_string = main_entities[0].description
-                sent_token = main_string.split('.')
-
-                for sente in sent_token:
-                    modular_speech(sente)
-                    if keyboard.is_pressed('d'):
-                        break
+                # sent_token = main_string.split('.')
+                #
+                # for sente in sent_token:
+                #     modular_speech(sente)
+                #     if keyboard.is_pressed('d'):
+                #         break
+                modular_speech(main_string)
 
     except AttributeError:
         save_speech('unknownError')
@@ -718,16 +747,17 @@ def readit():
         main_string = main_string.replace('|', '')
         main_string = main_string.replace('*', '')
 
-#         modular_speech(main_string)
+        modular_speech(main_string)
 
-        sent_token = main_string.split('.')
-        
-        for sente in sent_token:
-            modular_speech(sente)
-            if keyboard.is_pressed('d'):
-                break
+        # sent_token = main_string.split('.')
+        #
+        # for sente in sent_token:
+        #     modular_speech(sente)
+        #     if keyboard.is_pressed('d'):
+        #         break
     else:
         save_speech('unknownError')
+
 
 def check(text_inlet):
     text_key = 'f2bca51e7eef49ac8535f9595f4dda76'
@@ -740,22 +770,22 @@ def check(text_inlet):
     headers = {'Ocp-Apim-Subscription-Key': text_key}
     response = requests.post(key_phrase_api_url, headers=headers, json=documents)
     key_phrases = response.json()
-    stringy  = ''
+    stringy = ''
     for i in key_phrases['documents'][0]['keyPhrases']:
         stringy = stringy + ' ' + i
     return stringy
 
-def news(search_term = None):
-    subscription_key = "YOUR-SUBSCRIPTION-KEY"
+
+def news(search_term=None):
+    subscription_key = "cd23f8ab176b45868b54452e0c423cc4"
 
     if search_term == None:
-        save_speech('news')
+        save_speech('newsspeak')
         speech = speech2text()
         search_term = check(speech)
 
-
     client = NewsSearchAPI(CognitiveServicesCredentials(subscription_key))
-    news_result = client.news.search(query=search_term, market="en-us", count=10,freshness='Week')
+    news_result = client.news.search(query=search_term, market="en-us", count=10, freshness='Week')
     closer = False
 
     if news_result.value:
@@ -767,13 +797,8 @@ def news(search_term = None):
                     break
 
                 if keyboard.is_pressed('s'):
-                    sent_token = k.description.split('.')
-
-                    for sente in sent_token:
-                        modular_speech(sente)
-                        if keyboard.is_pressed('d'):
-                            break
-
+                    modular_speech(k.description)
+                    sleep(1)
                     break
 
                 if keyboard.is_pressed('d'):
@@ -782,10 +807,9 @@ def news(search_term = None):
 
             if closer == True:
                 break
+
             else:
                 pass
-
-
 
         # first_news_result = news_result.value[0]
         # print("Total estimated matches value: {}".format(news_result.total_estimated_matches))
@@ -798,7 +822,7 @@ def news(search_term = None):
     else:
         save_speech("nonews")
 
-        
+
 def main():
     global opener
     opener = False
@@ -869,8 +893,8 @@ def main():
                 readit()
                 opener = False
             else:
-                pass        
-            
+                pass
+
             speak_label('news')
             if opener == True:
                 news()
