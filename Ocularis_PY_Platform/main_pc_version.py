@@ -39,7 +39,6 @@ from azure.cognitiveservices.vision.computervision.models import TextRecognition
 from azure.cognitiveservices.vision.computervision.models import TextOperationStatusCodes
 import keyboard
 import time
-import winsound
 import subprocess
 
 
