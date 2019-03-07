@@ -40,6 +40,8 @@ from azure.cognitiveservices.vision.computervision.models import TextOperationSt
 import keyboard
 import time
 import winsound
+import subprocess
+
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
     pass
@@ -51,12 +53,12 @@ if os.path.exists(os.path.join(os.getcwd(), 'tempimages')):
 else:
     os.mkdir(os.path.join(os.getcwd(), 'tempimages'))
 
-# if os.path.exists(os.path.join(os.getcwd(), 'majortempaud')):
-#     # os.rmdir(os.path.join(os.getcwd(), 'majortempaud'))
-#     shutil.rmtree(os.path.join(os.getcwd(), 'majortempaud'))
-#     os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
-# else:
-#     os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
+if os.path.exists(os.path.join(os.getcwd(), 'majortempaud')):
+    # os.rmdir(os.path.join(os.getcwd(), 'majortempaud'))
+    shutil.rmtree(os.path.join(os.getcwd(), 'majortempaud'))
+    os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
+else:
+    os.mkdir(os.path.join(os.getcwd(), 'majortempaud'))
 
 if os.path.exists(os.path.join(os.getcwd(), 'temp.mp3')):
     os.remove('temp.mp3')
@@ -66,9 +68,12 @@ tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
 cameraResolution = (1024, 768)
 
 
-def playerasync(uid):
+def playerasync():
 
-    playsound.playsound(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'),False)
+    # playsound.playsound(os.path.join(os.getcwd(), 'majortempaud', '2019-03-0725129' + '.wav'),False)
+    # print('j')
+    subprocess.run(['python','speech_init.py'])
+
 
 def checker():
 
@@ -116,7 +121,7 @@ def save_audio(self,uid):
     if response.status_code == 200:
         with open(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'), 'wb') as audio:
             audio.write(response.content)
-            print("\nStatus code: " + str(response.status_code) + "\nYour TTS is ready for playback.\n")
+            
     else:
         print("\nStatus code: " + str(response.status_code) + "\nSomething went wrong. Check your subscription key and headers.\n")
 
@@ -131,15 +136,18 @@ def modular_speech(text):
         app = TextToSpeech(subscription_key, text)
         get_token(app)
         save_audio(app, uid)
-        p1 = multiprocessing.Process(target=checker)
-        p2 = multiprocessing.Process(target=playerasync(uid))
-        p1.start()
-        p2.start()
-        p1.join()
-        p2.terminate()
-        p2.join()
-        if p2.is_alive():
-            p2.terminate()
+        # p1 = multiprocessing.Process(target=checker)
+        # p2 = multiprocessing.Process(target=playerasync())
+        # p1.start()
+        # p2.start()
+        # p2.join()
+        # p2.terminate()
+        # p1.terminate()
+        proc = subprocess.Popen(['python','speech_init.py',uid])
+        checker()
+        proc.kill()
+        sleep(1)
+
 
     except Exception as e:
         print(e)
@@ -771,6 +779,7 @@ def check(text_inlet):
     response = requests.post(key_phrase_api_url, headers=headers, json=documents)
     key_phrases = response.json()
     stringy = ''
+    print(key_phrases)
     for i in key_phrases['documents'][0]['keyPhrases']:
         stringy = stringy + ' ' + i
     return stringy
