@@ -77,7 +77,7 @@ def modular_speech(text):
         p2 = multiprocessing.Process(target=playerasync(uid))
         p1.start()
         p2.start()
-        # p.join()
+        p1.join()
         p2.terminate()
         if p2.is_alive():
             p2.terminate()
