@@ -813,6 +813,10 @@ def news(search_term=None):
                     closer = True
                     break
 
+                if keyboard.is_pressed('q'):
+                    speak_label('goodbye')
+                    quit()
+
             if closer == True:
                 break
 
