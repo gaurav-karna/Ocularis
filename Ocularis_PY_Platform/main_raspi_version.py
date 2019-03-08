@@ -37,6 +37,7 @@ from PIL import Image
 import cv2
 from azure.cognitiveservices.vision.computervision.models import TextRecognitionMode
 from azure.cognitiveservices.vision.computervision.models import TextOperationStatusCodes
+import subprocess
 
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
@@ -65,6 +66,16 @@ GPIO_ECHO = 24
 GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 
+
+
+def checker():
+
+    while 1:
+        if GPIO.input(cn3) == 0:
+            break
+            
+            
+            
 def distancey():
     # set Trigger to HIGH
     GPIO.output(GPIO_TRIGGER, True)
@@ -212,13 +223,24 @@ def modular_speech(text):
         subscription_key = "51140fb620194c33b1e60d3df44bfd1f"
         now = datetime.datetime.now()
         uid = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
-        app = TextToSpeech(subscription_key,text)
+        app = TextToSpeech(subscription_key, text)
         get_token(app)
-        save_audio(app,uid)
-        playsound.playsound(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'))
+        save_audio(app, uid)
+        # p1 = multiprocessing.Process(target=checker)
+        # p2 = multiprocessing.Process(target=playerasync())
+        # p1.start()
+        # p2.start()
+        # p2.join()
+        # p2.terminate()
+        # p1.terminate()
+        proc = subprocess.Popen(['python','speech_init.py',uid])
+        checker()
+        proc.kill()
+        sleep(1)
+
+
     except Exception as e:
         print(e)
-        save_speech('error')
 
 def naviagtor(mlon,mlat,loc):
     prevlen = 0
@@ -721,7 +743,7 @@ def whoisthat():
             modular_speech(faces)
             
         if len(face_names) == 0:
-            modular_speech('noFaces')
+            save_speech('noFaces')
 
     except Exception:
         pass
@@ -745,12 +767,8 @@ def facts():
 
             if main_entities:
                 main_string = main_entities[0].description
-                sent_token = main_string.split('.')
-
-                for sente in sent_token:
-                    modular_speech(sente)
-                    if GPIO.input(cn1) == 0:
-                        break
+                modular_speech(main_string)
+                
     except AttributeError:
         save_speech('unknownError')
 
@@ -814,15 +832,15 @@ def readit():
         main_string = main_string.replace('|','')
         main_string = main_string.replace('*', '')
 
-#         modular_speech(main_string)
+        modular_speech(main_string)
 
 
-        sent_token = main_string.split('.')
+#         sent_token = main_string.split('.')
         
-        for sente in sent_token:
-            modular_speech(sente)
-            if GPIO.input(cn1) == 0:
-                break
+#         for sente in sent_token:
+#             modular_speech(sente)
+#             if GPIO.input(cn1) == 0:
+#                 break
                 
     else:
         save_speech('unknownError')
