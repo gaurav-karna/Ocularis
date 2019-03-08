@@ -28,7 +28,6 @@ import shutil
 from time import sleep
 import urllib.request
 import pyap
-import time
 import playsound
 import azure.cognitiveservices.speech as speechsdk
 import requests
