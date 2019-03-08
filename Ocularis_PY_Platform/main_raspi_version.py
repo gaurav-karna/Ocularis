@@ -55,6 +55,76 @@ bingMapsKey = 'Ar_sR9YDasSzQx0unCEyCqmb9cqIivEp4qHFYCCfuAYJfiZriQcMuYFt_IRzvR3b 
 tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
 cameraResolution = (1024, 768)
 
+GPIO.setmode(GPIO.BCM)
+
+# set GPIO Pins
+GPIO_TRIGGER = 18
+GPIO_ECHO = 24
+
+# set GPIO direction (IN / OUT)
+GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
+GPIO.setup(GPIO_ECHO, GPIO.IN)
+
+def distancey():
+    # set Trigger to HIGH
+    GPIO.output(GPIO_TRIGGER, True)
+
+    # set Trigger after 0.01ms to LOW
+    time.sleep(0.00001)
+    GPIO.output(GPIO_TRIGGER, False)
+
+    StartTime = time.time()
+    StopTime = time.time()
+
+    # save StartTime
+    while GPIO.input(GPIO_ECHO) == 0:
+        StartTime = time.time()
+
+    # save time of arrival
+    while GPIO.input(GPIO_ECHO) == 1:
+        StopTime = time.time()
+
+    # time difference between start and arrival
+    TimeElapsed = StopTime - StartTime
+    # multiply with the sonic speed (34300 cm/s)
+    # and divide by 2, because there and back
+    distance = (TimeElapsed * 34300) / 2
+
+    return distance
+
+def walkmode():
+    
+    save_speech('calibrate')
+    conti = False
+    prevdest = 0 
+    for i in range(0,300):
+        
+        if conti == True:
+            dist = distancey()
+            mean_dist = (dist + prevdist)/2
+            prevdist = dist
+            
+        else:
+            dist = distancey()
+            prevdist = dist
+            conti = True
+            
+     while 1:
+        dist = distancey()
+        main_dist = dist - mean_dist
+        
+        if main_dist > 15:
+            save_speech('beep')
+            cautious_wait(10/main_dist)
+            
+        if main_dist < -15:
+            save_speech('shallowarea')
+            speak_text('deep area ' + str(abs(main_dist)) + ' centimeter')
+            
+        if GPIO.input(cn3) == 0:
+            break
+        
+
 def speak_label(mytext):
 
     playsound.playsound(os.path.join(os.getcwd(), 'tempaud', mytext + '.mp3'))
@@ -894,10 +964,20 @@ def main():
                 opener = False
             else:
                 pass
-
-
-
-
+            
+            speak_label('news')
+            if opener == True:
+                news()
+                opener = False
+            else:
+                pass
+            
+            speak_label('walkmode')
+            if opener == True:
+                walkmode()
+                opener = False
+            else:
+                pass
 
     except KeyboardInterrupt:
         GPIO.cleanup()
