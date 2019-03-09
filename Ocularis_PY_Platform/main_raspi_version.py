@@ -38,6 +38,7 @@ import cv2
 from azure.cognitiveservices.vision.computervision.models import TextRecognitionMode
 from azure.cognitiveservices.vision.computervision.models import TextOperationStatusCodes
 import subprocess
+import soundfile as sf
 
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
@@ -70,7 +71,8 @@ GPIO.setup(GPIO_ECHO, GPIO.IN)
 
 def checker():
 
-    while 1:
+    time_start = time.time()
+    while sound_dur > (time.time() - time_start) :
         if GPIO.input(cn3) == 0:
             break
             
@@ -129,7 +131,6 @@ def walkmode():
             cautious_wait(10/main_dist)
             
         if main_dist < -15:
-            save_speech('shallowarea')
             speak_text('deep area ' + str(abs(main_dist)) + ' centimeter')
             
         if GPIO.input(cn3) == 0:
@@ -220,12 +221,15 @@ def save_audio(self,uid):
 
 def modular_speech(text):
     try:
+        global sound_dur
         subscription_key = "51140fb620194c33b1e60d3df44bfd1f"
         now = datetime.datetime.now()
         uid = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
         app = TextToSpeech(subscription_key, text)
         get_token(app)
         save_audio(app, uid)
+        sound_template = sf.SoundFile(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'))
+        sound_dur = len(sound_template) / sound_template.samplerate
         # p1 = multiprocessing.Process(target=checker)
         # p2 = multiprocessing.Process(target=playerasync())
         # p1.start()
@@ -233,12 +237,11 @@ def modular_speech(text):
         # p2.join()
         # p2.terminate()
         # p1.terminate()
-        proc = subprocess.Popen(['python','speech_init.py',uid])
+        proc = subprocess.Popen(['python', 'speech_init.py', uid])
         checker()
         proc.kill()
         sleep(1)
-
-
+        
     except Exception as e:
         print(e)
 
