@@ -40,7 +40,7 @@ import keyboard
 import time
 import subprocess
 import soundfile as sf
-
+import pyttsx3
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
     pass
@@ -123,6 +123,16 @@ def save_audio(self, uid):
     else:
         print("\nStatus code: " + str(
             response.status_code) + "\nSomething went wrong. Check your subscription key and headers.\n")
+
+def clock():
+    try:
+        something = pyttsx3.init()
+        something.setProperty('rate', 160)
+        something.say(datetime.datetime.now().strftime('today is %d    %m, the time is %H %M'))
+        something.runAndWait()
+
+    except Exception:
+        pass
 
 
 def modular_speech(text):
@@ -852,6 +862,8 @@ def main():
                 save_speech('welcome')
                 sleep(3)
                 count_main = 1
+
+
             # button_next = a
             # button_ok   = s
             # button_back = d
@@ -859,6 +871,13 @@ def main():
             speak_label('weather')
             if opener == True:
                 weather()
+                opener = False
+            else:
+                pass
+
+            speak_label('clock')
+            if opener == True:
+                clock()
                 opener = False
             else:
                 pass
