@@ -39,6 +39,7 @@ from azure.cognitiveservices.vision.computervision.models import TextOperationSt
 import keyboard
 import time
 import subprocess
+import soundfile as sf
 
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
@@ -67,21 +68,20 @@ cameraResolution = (1024, 768)
 
 
 def playerasync():
-
     # playsound.playsound(os.path.join(os.getcwd(), 'majortempaud', '2019-03-0725129' + '.wav'),False)
     # print('j')
-    subprocess.run(['python','speech_init.py'])
+    subprocess.run(['python', 'speech_init.py'])
 
 
 def checker():
-
-    while 1:
+    time_start = time.time()
+    while sound_dur > (time.time() - time_start) :
         if keyboard.is_pressed('d'):
             break
 
 
 class TextToSpeech(object):
-    def __init__(self, subscription_key,texty):
+    def __init__(self, subscription_key, texty):
         self.subscription_key = subscription_key
         self.tts = texty
         self.timestr = time.strftime("%Y%m%d-%H%M")
@@ -97,7 +97,7 @@ def get_token(self):
     self.access_token = str(response.text)
 
 
-def save_audio(self,uid):
+def save_audio(self, uid):
     base_url = 'https://westus.tts.speech.microsoft.com/'
     path = 'cognitiveservices/v1'
     constructed_url = base_url + path
@@ -119,21 +119,23 @@ def save_audio(self,uid):
     if response.status_code == 200:
         with open(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'), 'wb') as audio:
             audio.write(response.content)
-            
+
     else:
-        print("\nStatus code: " + str(response.status_code) + "\nSomething went wrong. Check your subscription key and headers.\n")
-
-
+        print("\nStatus code: " + str(
+            response.status_code) + "\nSomething went wrong. Check your subscription key and headers.\n")
 
 
 def modular_speech(text):
     try:
+        global sound_dur
         subscription_key = "51140fb620194c33b1e60d3df44bfd1f"
         now = datetime.datetime.now()
         uid = str(now.date()) + str(now.hour) + str(now.minute) + str(now.second)
         app = TextToSpeech(subscription_key, text)
         get_token(app)
         save_audio(app, uid)
+        sound_template = sf.SoundFile(os.path.join(os.getcwd(), 'majortempaud', uid + '.wav'))
+        sound_dur = len(sound_template) / sound_template.samplerate
         # p1 = multiprocessing.Process(target=checker)
         # p2 = multiprocessing.Process(target=playerasync())
         # p1.start()
@@ -141,7 +143,7 @@ def modular_speech(text):
         # p2.join()
         # p2.terminate()
         # p1.terminate()
-        proc = subprocess.Popen(['python','speech_init.py',uid])
+        proc = subprocess.Popen(['python', 'speech_init.py', uid])
         checker()
         proc.kill()
         sleep(1)
@@ -149,6 +151,7 @@ def modular_speech(text):
 
     except Exception as e:
         print(e)
+
 
 def speak_label(mytext):
     playsound.playsound(os.path.join(os.getcwd(), 'tempaud', mytext + '.mp3'))
@@ -161,6 +164,9 @@ def speak_label(mytext):
             global opener
             opener = True
             break
+        if keyboard.is_pressed('q'):
+            speak_label('goodbye')
+            quit()
 
 
 def naviagtor(mlon, mlat, loc):
@@ -569,7 +575,7 @@ def whatsthat():
         # Get region and key from environment variables
 
         region = 'westcentralus'
-        key = '43977e2279b849c1bb5c463387b37307'
+        key = '3202352b4d3e49678aa066c513ae0ef2'
 
         # Set credentials
         credentials = CognitiveServicesCredentials(key)
@@ -592,6 +598,7 @@ def whatsthat():
 
     except Exception as e:
         print(e)
+
 
 def remember():
     # set camera resolution
@@ -703,7 +710,7 @@ def facts():
 
 def readit():
     region = 'westcentralus'
-    key = '43977e2279b849c1bb5c463387b37307'
+    key = '3202352b4d3e49678aa066c513ae0ef2'
 
     # Set credentials
     credentials = CognitiveServicesCredentials(key)
@@ -766,7 +773,7 @@ def readit():
 
 
 def check(text_inlet):
-    text_key = 'f2bca51e7eef49ac8535f9595f4dda76'
+    text_key = 'c592c263a5b0440392ef655eda344e00'
     text_analytics_base_url = "https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/"
     key_phrase_api_url = text_analytics_base_url + "keyPhrases"
     documents = {'documents': [
@@ -777,14 +784,13 @@ def check(text_inlet):
     response = requests.post(key_phrase_api_url, headers=headers, json=documents)
     key_phrases = response.json()
     stringy = ''
-    print(key_phrases)
     for i in key_phrases['documents'][0]['keyPhrases']:
         stringy = stringy + ' ' + i
     return stringy
 
 
 def news(search_term=None):
-    subscription_key = "cd23f8ab176b45868b54452e0c423cc4"
+    subscription_key = "a05456788ad8447d8039b0e1d75f012a"
 
     if search_term == None:
         save_speech('newsspeak')
