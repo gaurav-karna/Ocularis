@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 import tinify
 import datetime
-import multiprocessing
+import random as rand
 from xml.etree import ElementTree
 from azure.cognitiveservices.search.newssearch import NewsSearchAPI
 import re
@@ -134,6 +134,24 @@ def clock():
     except Exception:
         pass
 
+def voiceassist():
+
+    try:
+        urly = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/0e1ef411-24d0-48b2-b924-7c42fc671289?verbose=true&timezoneOffset=-360&subscription-key=11b237c49a0b4bed99630659b34949d7&q='
+        save_speech(rand.choice(['greet1','greet2','greet3','greet4']))
+        request_said = speech2text()
+        response = urllib.request.urlopen(urly + urllib.parse.quote(request_said, safe='')).read().decode('utf-8')
+        # Loads response as JSON
+        weathery = json.loads(response)
+        intent_classified = weathery['topScoringIntent']['intent']
+        eval(intent_classified + '()')
+
+    except Exception:
+        save_speech('unknownError')
+        pass
+
+
+
 
 def modular_speech(text):
     try:
@@ -177,74 +195,62 @@ def speak_label(mytext):
         if keyboard.is_pressed('q'):
             speak_label('goodbye')
             quit()
+        if keyboard.is_pressed('o'):
+            voiceassist()
 
 
 def naviagtor(mlon, mlat, loc):
-    prevlen = 0
 
-    while 1:
+    try:
+        prevlen = 0
 
-        # input information
-        longitude = mlon
-        latitude = mlat
-        destination = str(loc)
+        while 1:
 
-        encodedDest = urllib.parse.quote(destination, safe='')
+            # input information
+            longitude = mlon
+            latitude = mlat
+            destination = str(loc)
 
-        routeUrl = "http://dev.virtualearth.net/REST/V1/Routes/Driving?wp.0=" + str(latitude) + "," + str(
-            longitude) + "&wp.1=" + encodedDest + "&key=" + bingMapsKey
+            encodedDest = urllib.parse.quote(destination, safe='')
 
-        request = urllib.request.Request(routeUrl)
-        response = urllib.request.urlopen(request)
+            routeUrl = "http://dev.virtualearth.net/REST/V1/Routes/Driving?wp.0=" + str(latitude) + "," + str(
+                longitude) + "&wp.1=" + encodedDest + "&key=" + bingMapsKey
 
-        r = response.read().decode(encoding="utf-8")
-        result = json.loads(r)
+            request = urllib.request.Request(routeUrl)
+            response = urllib.request.urlopen(request)
 
-        itineraryItems = result["resourceSets"][0]["resources"][0]["routeLegs"][0]["itineraryItems"]
-        route_distance = result["resourceSets"][0]["resources"][0]["travelDistance"]
+            r = response.read().decode(encoding="utf-8")
+            result = json.loads(r)
 
-        directions = []
-        main_dist = []
+            itineraryItems = result["resourceSets"][0]["resources"][0]["routeLegs"][0]["itineraryItems"]
+            route_distance = result["resourceSets"][0]["resources"][0]["travelDistance"]
 
-        # pprint.pprint(result)
-        for item in itineraryItems:
-            if float(item["travelDistance"]) < 1:
-                org_distance = str(float(item["travelDistance"]) * 1000) + ' metre '
-            else:
-                org_distance = str(item["travelDistance"]) + 'kilometre'
+            directions = []
+            main_dist = []
 
-            directions.append(item["instruction"]["text"] + ' in ' + org_distance)
-            main_dist.append(float(item["travelDistance"] * 1000))
+            # pprint.pprint(result)
+            for item in itineraryItems:
+                if float(item["travelDistance"]) < 1:
+                    org_distance = str(float(item["travelDistance"]) * 1000) + ' metre '
+                else:
+                    org_distance = str(item["travelDistance"]) + 'kilometre'
 
-        # print(main_dist)
-        if int(main_dist[0]) < 10:
-            modular_speech(directions[1])
+                directions.append(item["instruction"]["text"] + ' in ' + org_distance)
+                main_dist.append(float(item["travelDistance"] * 1000))
 
-        if len(directions) - prevlen == 0:
-            pass
-        else:
-            modular_speech(directions[0])
-
-        # print(directions)
-
-        prevlen = len(directions)
-
-        if keyboard.is_pressed('s') == 0:
+            # print(main_dist)
             if int(main_dist[0]) < 10:
                 modular_speech(directions[1])
+
+            if len(directions) - prevlen == 0:
+                pass
             else:
                 modular_speech(directions[0])
 
-        if keyboard.is_pressed('d') == 0:
-            break
+            # print(directions)
 
-        num = 4
+            prevlen = len(directions)
 
-        # since average human walking speed is 1.6m per second
-        start = time.time()
-        while 1:
-            if (time.time() - start) > num:
-                break
             if keyboard.is_pressed('s') == 0:
                 if int(main_dist[0]) < 10:
                     modular_speech(directions[1])
@@ -254,10 +260,33 @@ def naviagtor(mlon, mlat, loc):
             if keyboard.is_pressed('d') == 0:
                 break
 
+            num = 4
+
+            # since average human walking speed is 1.6m per second
+            start = time.time()
+            while 1:
+                if (time.time() - start) > num:
+                    break
+                if keyboard.is_pressed('s') == 0:
+                    if int(main_dist[0]) < 10:
+                        modular_speech(directions[1])
+                    else:
+                        modular_speech(directions[0])
+
+                if keyboard.is_pressed('d') == 0:
+                    break
+
+    except Exception:
+        pass
 
 def location(address):
-    addresses = pyap.parse(address, country='US')
-    return addresses[0]
+
+    try:
+        addresses = pyap.parse(address, country='US')
+        return addresses[0]
+
+    except Exception:
+        pass
 
 
 # location('can you direct me to 1394 Woodridge Lane Memphis Tennessee')
@@ -277,26 +306,32 @@ def speech2text():
         return result.text
     elif result.reason == speechsdk.ResultReason.NoMatch:
         print("No speech could be recognized: {}".format(result.no_match_details))
-        return 'error please try again'
+        return 'None'
     elif result.reason == speechsdk.ResultReason.Canceled:
         cancellation_details = result.cancellation_details
         print("Speech Recognition canceled: {}".format(cancellation_details.reason))
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
             print("Error details: {}".format(cancellation_details.error_details))
-        return 'error please try again'
+        return 'None'
 
 
 def find_loc_address(address):
-    encoded_dest = urllib.parse.quote(address, safe='')
-    endpoint = 'http://dev.virtualearth.net/REST/v1/Locations?q=' + encoded_dest + '&key=' + bingMapsKey
-    request = urllib.request.Request(endpoint)
-    response = urllib.request.urlopen(request)
 
-    r = response.read().decode(encoding="utf-8")
-    result = json.loads(r)
-    res_Check = result["resourceSets"][0]["resources"][0]['geocodePoints'][1]['coordinates']
-    return res_Check
-    # print(json.dumps(res_Check, indent=2))
+    try:
+        encoded_dest = urllib.parse.quote(address, safe='')
+        endpoint = 'http://dev.virtualearth.net/REST/v1/Locations?q=' + encoded_dest + '&key=' + bingMapsKey
+        request = urllib.request.Request(endpoint)
+        response = urllib.request.urlopen(request)
+
+        r = response.read().decode(encoding="utf-8")
+        result = json.loads(r)
+        res_Check = result["resourceSets"][0]["resources"][0]['geocodePoints'][1]['coordinates']
+        return res_Check
+        # print(json.dumps(res_Check, indent=2))
+
+    except Exception:
+        pass
+
 
 
 def currentad_seletest():
@@ -325,12 +360,15 @@ def save_speech(mytext):
 
 
 def currentad():
-    send_url = "http://api.ipstack.com/check?access_key=c687e4498fc801d7a66e9b42fb2f6e50"
-    geo_req = requests.get(send_url)
-    geo_json = json.loads(geo_req.text)
-    latitude = geo_json['latitude']
-    longitude = geo_json['longitude']
-    return [latitude, longitude]
+    try:
+        send_url = "http://api.ipstack.com/check?access_key=c687e4498fc801d7a66e9b42fb2f6e50"
+        geo_req = requests.get(send_url)
+        geo_json = json.loads(geo_req.text)
+        latitude = geo_json['latitude']
+        longitude = geo_json['longitude']
+        return [latitude, longitude]
+    except Exception:
+        pass
 
 
 def directions():
@@ -349,219 +387,227 @@ def directions():
 
 
 def weather():
-    latt, long = currentad()
-    endpoint = 'http://api.openweathermap.org/data/2.5/forecast?'
-    api_key = 'e33c84cc9eb1157c533611a494f638a3'
-    nav_request = 'lat={}&lon={}&APPID={}'.format(latt, long, api_key)
-    request = endpoint + nav_request
-    # Sends the request and reads the response.
-    response = urllib.request.urlopen(request).read().decode('utf-8')
-    # Loads response as JSON
-    weather = json.loads(response)
-    current_temp = weather['list'][0]['main']['temp']
-    temp_c = current_temp - 273.15
-    temp_c_str = str(int(temp_c)) + ' degree Celsius '
-    descript_place = weather['list'][0]['weather'][0]['main']
-    modular_speech(descript_place + ' ' + temp_c_str)
+    try:
+        latt, long = currentad()
+        endpoint = 'http://api.openweathermap.org/data/2.5/forecast?'
+        api_key = 'e33c84cc9eb1157c533611a494f638a3'
+        nav_request = 'lat={}&lon={}&APPID={}'.format(latt, long, api_key)
+        request = endpoint + nav_request
+        # Sends the request and reads the response.
+        response = urllib.request.urlopen(request).read().decode('utf-8')
+        # Loads response as JSON
+        weather = json.loads(response)
+        current_temp = weather['list'][0]['main']['temp']
+        temp_c = current_temp - 273.15
+        temp_c_str = str(int(temp_c)) + ' degree Celsius '
+        descript_place = weather['list'][0]['weather'][0]['main']
+        modular_speech(descript_place + ' ' + temp_c_str)
+
+    except Exception:
+        pass
 
 
 def uber():
-    UFP_PRODUCT_ID = '26546650-e557-4a7b-86e7-6a3942445247'
-
-    SURGE_PRODUCT_ID = 'd4abaae7-f4d6-4152-91cc-77523e8165a4'
-
-    save_speech('whereDoYouWantToGo')
-    speech = speech2text()
-    START_LAT, START_LNG = currentad()
     try:
-        loc = location(speech)
-    except IndexError:
-        loc = speech
+        UFP_PRODUCT_ID = '26546650-e557-4a7b-86e7-6a3942445247'
 
-    END_LAT, END_LNG = find_loc_address(loc)
+        SURGE_PRODUCT_ID = 'd4abaae7-f4d6-4152-91cc-77523e8165a4'
 
-    def estimate_ride(api_client):
-
+        save_speech('whereDoYouWantToGo')
+        speech = speech2text()
+        START_LAT, START_LNG = currentad()
         try:
-            estimate = api_client.estimate_ride(
-                product_id=SURGE_PRODUCT_ID,
-                start_latitude=START_LAT,
-                start_longitude=START_LNG,
-                end_latitude=END_LAT,
-                end_longitude=END_LNG,
-                seat_count=2
-            )
+            loc = location(speech)
+        except IndexError:
+            loc = speech
 
-        except (ClientError, ServerError) as error:
-            fail_print(error)
+        END_LAT, END_LNG = find_loc_address(loc)
 
-        else:
-            success_print(estimate.json)
+        def estimate_ride(api_client):
 
-    def update_surge(api_client, surge_multiplier):
+            try:
+                estimate = api_client.estimate_ride(
+                    product_id=SURGE_PRODUCT_ID,
+                    start_latitude=START_LAT,
+                    start_longitude=START_LNG,
+                    end_latitude=END_LAT,
+                    end_longitude=END_LNG,
+                    seat_count=2
+                )
 
-        try:
-            update_surge = api_client.update_sandbox_product(
-                SURGE_PRODUCT_ID,
-                surge_multiplier=surge_multiplier,
-            )
+            except (ClientError, ServerError) as error:
+                fail_print(error)
 
-        except (ClientError, ServerError) as error:
-            fail_print(error)
+            else:
+                success_print(estimate.json)
 
-        else:
-            success_print(update_surge.status_code)
+        def update_surge(api_client, surge_multiplier):
 
-    def update_ride(api_client, ride_status, ride_id):
+            try:
+                update_surge = api_client.update_sandbox_product(
+                    SURGE_PRODUCT_ID,
+                    surge_multiplier=surge_multiplier,
+                )
 
-        try:
-            update_product = api_client.update_sandbox_ride(ride_id, ride_status)
+            except (ClientError, ServerError) as error:
+                fail_print(error)
 
-        except (ClientError, ServerError) as error:
-            fail_print(error)
+            else:
+                success_print(update_surge.status_code)
 
-        else:
-            message = '{} New status: {}'
-            message = message.format(update_product.status_code, ride_status)
-            success_print(message)
+        def update_ride(api_client, ride_status, ride_id):
 
-    def request_ufp_ride(api_client):
+            try:
+                update_product = api_client.update_sandbox_ride(ride_id, ride_status)
 
-        try:
+            except (ClientError, ServerError) as error:
+                fail_print(error)
 
-            estimate = api_client.estimate_ride(
-                product_id=UFP_PRODUCT_ID,
-                start_latitude=START_LAT,
-                start_longitude=START_LNG,
-                end_latitude=END_LAT,
-                end_longitude=END_LNG,
-                seat_count=2
-            )
-            fare = estimate.json.get('fare')
+            else:
+                message = '{} New status: {}'
+                message = message.format(update_product.status_code, ride_status)
+                success_print(message)
 
-            request = api_client.request_ride(
-                product_id=UFP_PRODUCT_ID,
-                start_latitude=START_LAT,
-                start_longitude=START_LNG,
-                end_latitude=END_LAT,
-                end_longitude=END_LNG,
-                seat_count=2,
-                fare_id=fare['fare_id']
-            )
+        def request_ufp_ride(api_client):
 
-        except (ClientError, ServerError) as error:
-            fail_print(error)
-            return
+            try:
 
-        else:
-            success_print(estimate.json)
-            success_print(request.json)
-            return request.json.get('request_id')
+                estimate = api_client.estimate_ride(
+                    product_id=UFP_PRODUCT_ID,
+                    start_latitude=START_LAT,
+                    start_longitude=START_LNG,
+                    end_latitude=END_LAT,
+                    end_longitude=END_LNG,
+                    seat_count=2
+                )
+                fare = estimate.json.get('fare')
 
-    def request_surge_ride(api_client, surge_confirmation_id=None):
+                request = api_client.request_ride(
+                    product_id=UFP_PRODUCT_ID,
+                    start_latitude=START_LAT,
+                    start_longitude=START_LNG,
+                    end_latitude=END_LAT,
+                    end_longitude=END_LNG,
+                    seat_count=2,
+                    fare_id=fare['fare_id']
+                )
 
-        try:
-            request = api_client.request_ride(
-                product_id=SURGE_PRODUCT_ID,
-                start_latitude=START_LAT,
-                start_longitude=START_LNG,
-                end_latitude=END_LAT,
-                end_longitude=END_LNG,
-                surge_confirmation_id=surge_confirmation_id,
-                seat_count=2
-            )
+            except (ClientError, ServerError) as error:
+                fail_print(error)
+                return
 
-        except SurgeError as e:
-            surge_message = 'Confirm surge by visiting: \n{}\n'
-            surge_message = surge_message.format(e.surge_confirmation_href)
-            response_print(surge_message)
+            else:
+                success_print(estimate.json)
+                success_print(request.json)
+                return request.json.get('request_id')
 
-            confirm_url = 'Copy the URL you are redirected to and paste here: \n'
-            result = input(confirm_url).strip()
+        def request_surge_ride(api_client, surge_confirmation_id=None):
 
-            querystring = urlparse(result).query
-            query_params = parse_qs(querystring)
-            surge_id = query_params.get('surge_confirmation_id')[0]
+            try:
+                request = api_client.request_ride(
+                    product_id=SURGE_PRODUCT_ID,
+                    start_latitude=START_LAT,
+                    start_longitude=START_LNG,
+                    end_latitude=END_LAT,
+                    end_longitude=END_LNG,
+                    surge_confirmation_id=surge_confirmation_id,
+                    seat_count=2
+                )
 
-            # automatically try request again
-            return request_surge_ride(api_client, surge_id)
+            except SurgeError as e:
+                surge_message = 'Confirm surge by visiting: \n{}\n'
+                surge_message = surge_message.format(e.surge_confirmation_href)
+                response_print(surge_message)
 
-        except (ClientError, ServerError) as error:
-            fail_print(error)
-            return
+                confirm_url = 'Copy the URL you are redirected to and paste here: \n'
+                result = input(confirm_url).strip()
 
-        else:
-            success_print(request.json)
-            return request.json.get('request_id')
+                querystring = urlparse(result).query
+                query_params = parse_qs(querystring)
+                surge_id = query_params.get('surge_confirmation_id')[0]
 
-    def get_ride_details(api_client, ride_id):
+                # automatically try request again
+                return request_surge_ride(api_client, surge_id)
 
-        try:
-            ride_details = api_client.get_ride_details(ride_id)
+            except (ClientError, ServerError) as error:
+                fail_print(error)
+                return
 
-        except (ClientError, ServerError) as error:
-            fail_print(error)
+            else:
+                success_print(request.json)
+                return request.json.get('request_id')
 
-        else:
-            success_print(ride_details.json)
+        def get_ride_details(api_client, ride_id):
 
-    if __name__ == '__main__':
-        credentials = import_oauth2_credentials()
-        api_client = create_uber_client(credentials)
+            try:
+                ride_details = api_client.get_ride_details(ride_id)
 
-        # ride request with upfront pricing flow
+            except (ClientError, ServerError) as error:
+                fail_print(error)
 
-        modular_speech("Request a ride with upfront pricing product.")
-        ride_id = request_ufp_ride(api_client)
+            else:
+                success_print(ride_details.json)
 
-        modular_speech("Update ride status to accepted.")
-        update_ride(api_client, 'accepted', ride_id)
+        if __name__ == '__main__':
+            credentials = import_oauth2_credentials()
+            api_client = create_uber_client(credentials)
 
-        modular_speech("Updated ride details.")
-        get_ride_details(api_client, ride_id)
-        update_ride(api_client, 'in_progress', ride_id)
+            # ride request with upfront pricing flow
 
-        modular_speech("Updated ride details.")
-        get_ride_details(api_client, ride_id)
+            modular_speech("Request a ride with upfront pricing product.")
+            ride_id = request_ufp_ride(api_client)
 
-        modular_speech("Update ride status to completed.")
-        update_ride(api_client, 'completed', ride_id)
+            modular_speech("Update ride status to accepted.")
+            update_ride(api_client, 'accepted', ride_id)
 
-        modular_speech("Updated ride details.")
-        get_ride_details(api_client, ride_id)
+            modular_speech("Updated ride details.")
+            get_ride_details(api_client, ride_id)
+            update_ride(api_client, 'in_progress', ride_id)
 
-        # ride request with surge flow
+            modular_speech("Updated ride details.")
+            get_ride_details(api_client, ride_id)
 
-        modular_speech("Ride estimates before surge.")
-        estimate_ride(api_client)
+            modular_speech("Update ride status to completed.")
+            update_ride(api_client, 'completed', ride_id)
 
-        modular_speech("Activate surge.")
-        update_surge(api_client, 2.0)
+            modular_speech("Updated ride details.")
+            get_ride_details(api_client, ride_id)
 
-        modular_speech("Ride estimates after surge.")
-        estimate_ride(api_client)
+            # ride request with surge flow
 
-        modular_speech("Request a ride with surging product.")
-        ride_id = request_surge_ride(api_client)
+            modular_speech("Ride estimates before surge.")
+            estimate_ride(api_client)
 
-        modular_speech("Update ride status to accepted.")
-        update_ride(api_client, 'accepted', ride_id)
+            modular_speech("Activate surge.")
+            update_surge(api_client, 2.0)
 
-        modular_speech("Updated ride details.")
-        get_ride_details(api_client, ride_id)
-        update_ride(api_client, 'in_progress', ride_id)
+            modular_speech("Ride estimates after surge.")
+            estimate_ride(api_client)
 
-        modular_speech("Updated ride details.")
-        get_ride_details(api_client, ride_id)
+            modular_speech("Request a ride with surging product.")
+            ride_id = request_surge_ride(api_client)
 
-        modular_speech("Update ride status to completed.")
-        update_ride(api_client, 'completed', ride_id)
+            modular_speech("Update ride status to accepted.")
+            update_ride(api_client, 'accepted', ride_id)
 
-        modular_speech("Updated ride details.")
-        get_ride_details(api_client, ride_id)
+            modular_speech("Updated ride details.")
+            get_ride_details(api_client, ride_id)
+            update_ride(api_client, 'in_progress', ride_id)
 
-        modular_speech("Deactivate surge.")
-        update_surge(api_client, 1.0)
+            modular_speech("Updated ride details.")
+            get_ride_details(api_client, ride_id)
+
+            modular_speech("Update ride status to completed.")
+            update_ride(api_client, 'completed', ride_id)
+
+            modular_speech("Updated ride details.")
+            get_ride_details(api_client, ride_id)
+
+            modular_speech("Deactivate surge.")
+            update_surge(api_client, 1.0)
+
+    except Exception:
+        pass
 
 
 def whatsthat():
@@ -611,33 +657,38 @@ def whatsthat():
 
 
 def remember():
-    # set camera resolution
-    name_docu = 'tempface.jpeg'
-    cap = cv2.VideoCapture(0)
-    r, image = cap.read()
-    cv2.imwrite(name_docu, image)
-    cap.release()
 
-    image_port = face_recognition.load_image_file(name_docu)
-    face_locations = face_recognition.face_locations(image_port)
-    # from PIL import Image
-    # image = Image.open(name_docu)
+    try:
+        # set camera resolution
+        name_docu = 'tempface.jpeg'
+        cap = cv2.VideoCapture(0)
+        r, image = cap.read()
+        cv2.imwrite(name_docu, image)
+        cap.release()
 
-    if len(face_locations) > 0:
-        # face_location = face_locations = face_recognition.face_locations(image_port)
+        image_port = face_recognition.load_image_file(name_docu)
+        face_locations = face_recognition.face_locations(image_port)
+        # from PIL import Image
+        # image = Image.open(name_docu)
 
-        for face_location in face_locations:
-            # Print the location of each face in this image
-            top, right, bottom, left = face_location
-            face_image = image[top:bottom, left:right]
-            pil_image = Image.fromarray(face_image)
-            save_speech('nameOfPerson')
-            name_person = speech2text()
-            pil_image.save(os.path.join(os.getcwd(), 'folder_images', name_person + '.jpeg'))
+        if len(face_locations) > 0:
+            # face_location = face_locations = face_recognition.face_locations(image_port)
 
-    else:
+            for face_location in face_locations:
+                # Print the location of each face in this image
+                top, right, bottom, left = face_location
+                face_image = image[top:bottom, left:right]
+                pil_image = Image.fromarray(face_image)
+                save_speech('nameOfPerson')
+                name_person = speech2text()
+                pil_image.save(os.path.join(os.getcwd(), 'folder_images', name_person + '.jpeg'))
 
-        save_speech('noFaces')
+        else:
+
+            save_speech('noFaces')
+
+    except Exception:
+        pass
 
 
 def whoisthat():
@@ -684,10 +735,12 @@ def whoisthat():
             modular_speech('noFaces')
 
     except Exception:
+        save_speech('unknownError')
         pass
 
 
 def facts():
+
     subscription_key = '600ab55597bb4bf08c1878e935ead82c'
     from azure.cognitiveservices.search.entitysearch import EntitySearchAPI
     from azure.cognitiveservices.search.entitysearch.models import Place, ErrorResponseException
@@ -719,135 +772,138 @@ def facts():
 
 
 def readit():
-    region = 'westcentralus'
-    key = '3202352b4d3e49678aa066c513ae0ef2'
+    try:
+        region = 'westcentralus'
+        key = '3202352b4d3e49678aa066c513ae0ef2'
 
-    # Set credentials
-    credentials = CognitiveServicesCredentials(key)
+        # Set credentials
+        credentials = CognitiveServicesCredentials(key)
 
-    # Create client
-    client = ComputerVisionAPI(region, credentials=credentials)
+        # Create client
+        client = ComputerVisionAPI(region, credentials=credentials)
 
-    name_docu = 'tempread.jpeg'
-    cap = cv2.VideoCapture(0)
-    r, image = cap.read()
-    cv2.imwrite(name_docu, image)
-    cap.release()
+        name_docu = 'tempread.jpeg'
+        cap = cv2.VideoCapture(0)
+        r, image = cap.read()
+        cv2.imwrite(name_docu, image)
+        cap.release()
 
-    source = tinify.from_file(os.path.join(os.getcwd(), name_docu))
-    url = source.url
-    mode = TextRecognitionMode.handwritten
-    raw = True
-    custom_headers = None
-    numberOfCharsInOperationId = 36
+        source = tinify.from_file(os.path.join(os.getcwd(), name_docu))
+        url = source.url
+        mode = TextRecognitionMode.handwritten
+        raw = True
+        custom_headers = None
+        numberOfCharsInOperationId = 36
 
-    save_speech('waitForText')
+        save_speech('waitForText')
 
-    # Async SDK call
-    rawHttpResponse = client.recognize_text(url, mode, custom_headers, raw)
+        # Async SDK call
+        rawHttpResponse = client.recognize_text(url, mode, custom_headers, raw)
 
-    # Get ID from returned headers
-    operationLocation = rawHttpResponse.headers["Operation-Location"]
-    idLocation = len(operationLocation) - numberOfCharsInOperationId
-    operationId = operationLocation[idLocation:]
+        # Get ID from returned headers
+        operationLocation = rawHttpResponse.headers["Operation-Location"]
+        idLocation = len(operationLocation) - numberOfCharsInOperationId
+        operationId = operationLocation[idLocation:]
 
-    result = client.get_text_operation_result(operationId)
-
-    # SDK call
-    while result.status in ['NotStarted', 'Running']:
-        time.sleep(1)
         result = client.get_text_operation_result(operationId)
 
-    # Get data
-    main_string = ''
+        # SDK call
+        while result.status in ['NotStarted', 'Running']:
+            time.sleep(1)
+            result = client.get_text_operation_result(operationId)
 
-    if result.status == TextOperationStatusCodes.succeeded:
+        # Get data
+        main_string = ''
 
-        for line in result.recognition_result.lines:
-            main_string = main_string + ' ' + line.text
+        if result.status == TextOperationStatusCodes.succeeded:
 
-        main_string = re.sub("!|/|;|:|-", "", main_string)
-        main_string = main_string.replace('|', '')
-        main_string = main_string.replace('*', '')
+            for line in result.recognition_result.lines:
+                main_string = main_string + ' ' + line.text
 
-        modular_speech(main_string)
+            main_string = re.sub("!|/|;|:|-", "", main_string)
+            main_string = main_string.replace('|', '')
+            main_string = main_string.replace('*', '')
 
-        # sent_token = main_string.split('.')
-        #
-        # for sente in sent_token:
-        #     modular_speech(sente)
-        #     if keyboard.is_pressed('d'):
-        #         break
-    else:
-        save_speech('unknownError')
+            modular_speech(main_string)
 
+            # sent_token = main_string.split('.')
+            #
+            # for sente in sent_token:
+            #     modular_speech(sente)
+            #     if keyboard.is_pressed('d'):
+            #         break
+        else:
+            save_speech('unknownError')
+
+    except Exception:
+        pass
 
 def check(text_inlet):
-    text_key = 'c592c263a5b0440392ef655eda344e00'
-    text_analytics_base_url = "https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/"
-    key_phrase_api_url = text_analytics_base_url + "keyPhrases"
-    documents = {'documents': [
-        {'id': '1', 'language': 'en',
-         'text': text_inlet}
-    ]}
-    headers = {'Ocp-Apim-Subscription-Key': text_key}
-    response = requests.post(key_phrase_api_url, headers=headers, json=documents)
-    key_phrases = response.json()
-    stringy = ''
-    for i in key_phrases['documents'][0]['keyPhrases']:
-        stringy = stringy + ' ' + i
-    return stringy
+    try:
+        text_key = 'c592c263a5b0440392ef655eda344e00'
+        text_analytics_base_url = "https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/"
+        key_phrase_api_url = text_analytics_base_url + "keyPhrases"
+        documents = {'documents': [
+            {'id': '1', 'language': 'en',
+             'text': text_inlet}
+        ]}
+        headers = {'Ocp-Apim-Subscription-Key': text_key}
+        response = requests.post(key_phrase_api_url, headers=headers, json=documents)
+        key_phrases = response.json()
+        stringy = ''
+        for i in key_phrases['documents'][0]['keyPhrases']:
+            stringy = stringy + ' ' + i
+        return stringy
+    except Exception:
+        pass
 
 
 def news(search_term=None):
-    subscription_key = "a05456788ad8447d8039b0e1d75f012a"
 
-    if search_term == None:
-        save_speech('newsspeak')
-        speech = speech2text()
-        search_term = check(speech)
+    try:
+        subscription_key = "a05456788ad8447d8039b0e1d75f012a"
 
-    client = NewsSearchAPI(CognitiveServicesCredentials(subscription_key))
-    news_result = client.news.search(query=search_term, market="en-us", count=10, freshness='Week')
-    closer = False
+        if search_term == None:
+            save_speech('newsspeak')
+            speech = speech2text()
+            search_term = check(speech)
 
-    if news_result.value:
-        for k in news_result.value:
-            modular_speech(k.name)
+        client = NewsSearchAPI(CognitiveServicesCredentials(subscription_key))
+        news_result = client.news.search(query=search_term, market="en-us", count=10, freshness='Week')
+        closer = False
 
-            while True:
-                if keyboard.is_pressed('a'):
+        if news_result.value:
+            for k in news_result.value:
+                modular_speech(k.name)
+
+                while True:
+                    if keyboard.is_pressed('a'):
+                        break
+
+                    if keyboard.is_pressed('s'):
+                        modular_speech(k.description)
+                        sleep(1)
+                        break
+
+                    if keyboard.is_pressed('d'):
+                        closer = True
+                        break
+
+                    if keyboard.is_pressed('q'):
+                        speak_label('goodbye')
+                        quit()
+
+                if closer == True:
                     break
 
-                if keyboard.is_pressed('s'):
-                    modular_speech(k.description)
-                    sleep(1)
-                    break
+                else:
+                    pass
 
-                if keyboard.is_pressed('d'):
-                    closer = True
-                    break
+        else:
+            save_speech("nonews")
 
-                if keyboard.is_pressed('q'):
-                    speak_label('goodbye')
-                    quit()
-
-            if closer == True:
-                break
-
-            else:
-                pass
-
-        # first_news_result = news_result.value[0]
-        # print("Total estimated matches value: {}".format(news_result.total_estimated_matches))
-        # print("News result count: {}".format(len(news_result.value)))
-        # print("First news name: {}".format(first_news_result.name))
-        # print("First news url: {}".format(first_news_result.url))
-        # print("First news description: {}".format(first_news_result.description))
-        # print("First published time: {}".format(first_news_result.date_published))
-        # print("First news provider: {}".format(first_news_result.provider[0].name))
-    else:
-        save_speech("nonews")
+    except Exception:
+        pass
 
 
 def main():
