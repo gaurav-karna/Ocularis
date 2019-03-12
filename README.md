@@ -1,5 +1,8 @@
 ![alt text](https://i.ibb.co/TRLvJmt/fin-thumbnail-000.png "Ocularis_Copyright")
 [![codebeat badge](https://codebeat.co/badges/40a7cfcd-2db2-4b95-ba29-c9f3ea76845c)](https://codebeat.co/projects/github-com-devshaaran-ocularis-master)
+[![python_badge](https://img.shields.io/badge/3.6.4-Python-blue.svg)](https://www.python.org)
+[![microsoft_badge](https://img.shields.io/badge/%231-Microsoft%20Discover%20Azure%20Hackathon-green.svg)](https://www.linkedin.com/feed/update/urn:li:activity:6476188861075587072)
+
 # Ocularis
 
 ## Let's Imagine with Microsoft
