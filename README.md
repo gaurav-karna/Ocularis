@@ -129,9 +129,8 @@ user, it can activate the vibrator in the stick.
 
 ## Usage:
 
-* Once you have the prerequisites installed, enter git clone https://github.com/gaurav-
-karna/Ocularis in the command prompt to clone the repository
-Navigate to the Ocularis_PY_Platform folder with cd Ocularis/Ocularis_PY_Platform
+* Once you have the prerequisites installed, enter git clone https://github.com/gaurav-karna/Ocularis in the command prompt to clone the repository
+* Navigate to the Ocularis_PY_Platform folder with cd Ocularis/Ocularis_PY_Platform
 * Now type pip install -r requirements.txt – to install the dependencies.
 * Then, enter python main_pc_version.py
 * Shortly, you should hear “Welcome to Ocularis, the blind assistant”, and then the first
