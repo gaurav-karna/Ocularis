@@ -41,6 +41,8 @@ import time
 import subprocess
 import soundfile as sf
 import pyttsx3
+import socket
+import connect_to_internet
 
 if os.path.exists(os.path.join(os.getcwd(), 'folder_images')):
     pass
@@ -65,6 +67,14 @@ if os.path.exists(os.path.join(os.getcwd(), 'temp.mp3')):
 bingMapsKey = 'Ar_sR9YDasSzQx0unCEyCqmb9cqIivEp4qHFYCCfuAYJfiZriQcMuYFt_IRzvR3b '
 tinify.key = "XhGGcrKhVkpTLSr7m7ZdRsz18DCgxdww"
 cameraResolution = (1024, 768)
+
+def internet(host="8.8.8.8", port=53, timeout=3):
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return True
+    except Exception as ex:
+        return False
 
 
 def playerasync():
@@ -918,6 +928,10 @@ def main():
                 save_speech('welcome')
                 sleep(3)
                 count_main = 1
+                if internet():
+                    pass
+                else:
+                    connect_to_internet.main()
 
 
             # button_next = a
