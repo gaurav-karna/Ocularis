@@ -15,6 +15,15 @@
 
 * Please Use Windows for maximum experience
 * Recommended `Python Version - 3.6.4`
+* Proceed to install all the package requirements using PIP and pypi.org
+* Note that if you do not have face_recognition installed, you will need to install
+cmake first, followed by dlib, and then face_recognition
+* Depending on your machine, you will need to grant access to the camera and microphone to the program
+                 For example – Windows machines need the pywin32 package for the program to function correctly.
+* There are 3 versions of code, one for C#, one for raspberry Pi and the other for regular PC.
+* If you want to run the code on your PC please follow the below instructions.
+* The Uber integration currently works in a sandbox environment (simulation).
+* Walkmode is available only on the raspberry Pi version since it requires GPIO Pins.
 
 
 ## What is Ocularis ?
@@ -118,3 +127,16 @@ So, instead of saying loudly “who is this guy in front of me?” they can push
 gets notified of the interaction between user and Ocularis. Moreover, when Ocularis detects a danger to the
 user, it can activate the vibrator in the stick.
 
+## Usage:
+
+* Once you have the prerequisites installed, enter git clone https://github.com/gaurav-
+karna/Ocularis in the command prompt to clone the repository
+Navigate to the Ocularis_PY_Platform folder with cd Ocularis/Ocularis_PY_Platform
+* Now type pip install -r requirements.txt – to install the dependencies.
+* Then, enter python main_pc_version.py
+* Shortly, you should hear “Welcome to Ocularis, the blind assistant”, and then the first
+option of many, “weather”
+* Use ‘d’ (exit current selection) and ‘a’ (go to next) to cycle between the options, and
+use ‘s’ to select that option and wait for the response.
+* Use ‘q’ to quit Ocularis.
+* Use 'o' to access the Ocularis assistant.
