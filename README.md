@@ -1,5 +1,5 @@
 ![alt text](https://i.ibb.co/TRLvJmt/fin-thumbnail-000.png "Ocularis_Copyright")
-
+[![codebeat badge](https://codebeat.co/badges/40a7cfcd-2db2-4b95-ba29-c9f3ea76845c)](https://codebeat.co/projects/github-com-devshaaran-ocularis-master)
 # Ocularis
 
 ## Let's Imagine with Microsoft
