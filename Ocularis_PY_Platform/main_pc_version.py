@@ -691,6 +691,7 @@ def remember():
                 pil_image = Image.fromarray(face_image)
                 save_speech('nameOfPerson')
                 name_person = speech2text()
+                name_person.replace('.','')
                 pil_image.save(os.path.join(os.getcwd(), 'folder_images', name_person + '.jpeg'))
 
         else:
