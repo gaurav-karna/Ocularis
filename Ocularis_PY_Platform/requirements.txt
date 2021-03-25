@@ -42,7 +42,7 @@ python-firebase==1.2
 python-twitter==3.4.1
 pyttsx3==2.7
 pytz==2018.9
-PyYAML==3.13
+PyYAML==5.4
 requests==2.21.0
 requests-oauthlib==0.8.0
 rsa==4.0
