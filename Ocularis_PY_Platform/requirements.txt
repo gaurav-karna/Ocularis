@@ -45,7 +45,7 @@ pytz==2018.9
 PyYAML==3.13
 requests==2.21.0
 requests-oauthlib==0.8.0
-rsa==4.0
+rsa==4.7
 scipy==1.2.1
 selenium==3.11.0
 six==1.12.0
